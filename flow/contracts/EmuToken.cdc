@@ -1,4 +1,4 @@
-import FungibleToken from 0xf8d6e0586b0a20c7
+import FungibleToken from 0x9a0766d93b6608b7
 
 pub contract EmuToken: FungibleToken {
 

@@ -1,8 +1,8 @@
-import NonFungibleToken from 0xf8d6e0586b0a20c7
-import FungibleToken from 0xf8d6e0586b0a20c7
-import FungibleTokens from 0xf8d6e0586b0a20c7
-import EmuToken from 0xf8d6e0586b0a20c7
-import EmuSwap from 0xf8d6e0586b0a20c7
+import NonFungibleToken from 0x631e88ae7f1d7c20
+import FungibleToken from 0x9a0766d93b6608b7
+import FungibleTokens from 0xa82167f00f08b71d
+import EmuToken from 0xa82167f00f08b71d
+import EmuSwap from 0xa82167f00f08b71d
 
 // Liquidity Mining
 //

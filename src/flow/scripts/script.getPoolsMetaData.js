@@ -3,7 +3,7 @@ import * as fcl from "@onflow/fcl"
 export const getPoolsMetaData = async () => {
   const info = await fcl.query({
       cadence: `
-      import EmuSwap from 0xf8d6e0586b0a20c7
+      import EmuSwap from 0xEmuSwap
        
       pub fun main():[EmuSwap.PoolMeta] {
         let meta: [EmuSwap.PoolMeta] = []
