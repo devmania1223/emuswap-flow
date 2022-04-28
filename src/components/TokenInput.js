@@ -5,8 +5,7 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import { CloseIcon } from "./svgIcon";
 import { TOKENS } from "../config";
 
-export default function TokenInput({ tokenImage, title, onChange, inputTitle }) {
-    const [balance, setBalance] = useState(0);
+export default function TokenInput({ tokenImage, title, onChange, inputTitle, balance }) {
     const [amount, setAmount] = useState();
     const handleValue = (amount) => {
         setAmount(amount)

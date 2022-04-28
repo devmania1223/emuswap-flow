@@ -1,20 +1,46 @@
 import { NextSeo } from "next-seo";
-import { useState } from "react";
+import { useState , useEffect } from "react";
 import TokenInput from "../components/TokenInput";
 import { TOKENS } from "../config";
 import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
+import * as scripts from "../flow/scripts/script.getPoolsMetaData"
 
 export default function SwapPage() {
     const [firstToken, setFirstToken] = useState(TOKENS[0]);
-    const [secondToken, setSecondToken] = useState(TOKENS[1])
+    const [firstTokenAmount, setFirstTokenAmount] = useState(0);
+    const [secondToken, setSecondToken] = useState(TOKENS[1]);
+    const [secondTokenAmount, setSecondTokenAmount] = useState(0);
+    const [poolsMetaData, setPoolsMetaData ] = useState([]);
     const handleReplace = () => {
         setFirstToken(secondToken)
         setSecondToken(firstToken)
+        setFirstTokenAmount(secondTokenAmount)
+        setsetSecondTokenAmount(firstTokenAmount)
     }
 
-    const getToken2Amount = () => {
+    const getPools = async () => {
+        let poolsMetaData = await scripts.getPoolsMetaData();
+        setPoolsMetaData(poolsMetaData);
         
     }
+
+    const getTokensAmount = () => {
+        poolsMetaData.forEach((item,index) => {
+            if (item.token1Identifier === firstToken && item.token2Identifier === secondToken) {
+                setFirstTokenAmount(item.token1Amount);
+                setSecondTokenAmount(item.token2Amount);
+            }
+        })
+    }
+
+    useEffect(()=>{
+        getPools();
+    },[]);
+
+    useEffect(()=>{
+        getTokensAmount();
+    },[poolsMetaData]);
+    
     return (
         <>
             <NextSeo
@@ -40,10 +66,8 @@ export default function SwapPage() {
                 <div className="swap-box">
                     <div className="swap-main">
                         <TokenInput tokenImage={firstToken.icon} title={firstToken.tokenName} onChange={(e) => {
-                            console.log(e)
                             setFirstToken(e);
-                            
-                        }} inputTitle="From" />
+                        }} inputTitle="From" balance={firstTokenAmount}/>
                         <div className="display-center">
                             <button className="btn-replace" onClick={() => handleReplace()}>
                                 <ArrowDownwardRoundedIcon />
@@ -52,7 +76,7 @@ export default function SwapPage() {
                         <TokenInput tokenImage={secondToken.icon} title={secondToken.tokenName} onChange={(e) => {
                              console.log(e);
                              setSecondToken(e);
-                        }} inputTitle="To" />
+                        }} inputTitle="To" balance={secondTokenAmount}/>
                     </div>
                     <button className="btn-add-amount" style={{ marginTop: 10 }}>
                         Enter an amount

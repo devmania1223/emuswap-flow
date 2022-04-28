@@ -4,7 +4,7 @@ import * as t from "@onflow/types"
 export const getAToExactB = async (poolID , amount) => {
   const info = await fcl.query({
       cadence: `
-      import EmuSwap from 0xEmuSwap
+      import EmuSwap from 0xf8d6e0586b0a20c7
        
       pub fun main(poolID: UInt64, amount: UFix64): UFix64 {
           let poolRef = EmuSwap.borrowPool(id: poolID)
