@@ -13,7 +13,7 @@
 
 
 
-import FungibleToken from 0xee82856bf20e2aa6
+import FungibleToken from 0xf8d6e0586b0a20c7
 import EmuToken from 0xf8d6e0586b0a20c7
 import EmuSwap from 0xf8d6e0586b0a20c7
 pub contract xEmuToken: FungibleToken {
@@ -208,7 +208,7 @@ pub contract xEmuToken: FungibleToken {
     }
     
   
-    init(adminAccount: AuthAccount) {
+    init() {
         self.emuPool <- EmuToken.createEmptyVault() 
 
         self.totalSupply = 0.0
@@ -218,12 +218,12 @@ pub contract xEmuToken: FungibleToken {
         let vault <- create Vault(balance: self.totalSupply)
 
         self.xEmuTokenVaultStoragePath = /storage/xEmuTokenVault
-        adminAccount.save(<-vault, to: self.xEmuTokenVaultStoragePath)
+        self.account.save(<-vault, to: self.xEmuTokenVaultStoragePath)
 
         // Create a public capability to the stored Vault that only exposes
         // the `deposit` method through the `Receiver` interface
         //
-        adminAccount.link<&xEmuToken.Vault{FungibleToken.Receiver}>(
+        self.account.link<&xEmuToken.Vault{FungibleToken.Receiver}>(
             /public/xEmuTokenReceiver,
             target: self.xEmuTokenVaultStoragePath
         )
@@ -231,7 +231,7 @@ pub contract xEmuToken: FungibleToken {
         // Create a public capability to the stored Vault that only exposes
         // the `balance` field through the `Balance` interface
         //
-        adminAccount.link<&xEmuToken.Vault{FungibleToken.Balance}>(
+        self.account.link<&xEmuToken.Vault{FungibleToken.Balance}>(
             /public/xEmuTokenBalance,
             target: self.xEmuTokenVaultStoragePath
         )
