@@ -59,7 +59,10 @@ export default function AddPage() {
                             tokenImage={firstToken.icon} 
                             title={firstToken.tokenName} 
                             onAmountChange = {(value) => {setFirstTokenAmount(value)}} 
-                            onChange={(e) => setFirstToken(e)} 
+                            onChange={(e) => {
+                                setFirstToken(e);
+                                setFirstTokenAmount(0);
+                            }} 
                             amount = {firstTokenAmount}
                             balance = {0}/>
                         <div className="display-center">
@@ -69,7 +72,10 @@ export default function AddPage() {
                             tokenImage={secondToken.icon} 
                             title={secondToken.tokenName} 
                             onAmountChange = {(value) => {setSecondTokenAmount(value)}}  
-                            onChange={(e) => setSecondToken(e)} 
+                            onChange={(e) => {
+                                setSecondToken(e);
+                                setSecondTokenAmount(0);
+                            }} 
                             amount = {secondTokenAmount}
                             balance = {0}
                             />
