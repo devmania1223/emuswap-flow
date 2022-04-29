@@ -9,6 +9,7 @@ config({
     "0xFungibleTokens": "0xa82167f00f08b71d",
     "0xMetadataViews": "0xa82167f00f08b71d",
     "0xEmuToken": "0xa82167f00f08b71d",
+    "0xFUSD": "0xa82167f00f08b71d",
     "0xEmuSwap": "0xa82167f00f08b71d",
     "0xStakingRewards": "0xa82167f00f08b71d",
     "0xxEmuToken": "0xa82167f00f08b71d",
