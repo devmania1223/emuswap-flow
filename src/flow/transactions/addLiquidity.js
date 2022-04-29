@@ -9,7 +9,7 @@ export const addLiquidity = async (signer, token1Amount , token2Amount) => {
         import FungibleToken from 0xFungibleToken
         import FungibleTokens from 0xFungibleTokens
         import EmuToken from 0xEmuToken
-        import FUSD from from 0xFUSD
+        import FUSD from 0xFUSD
         import EmuSwap from 0xEmuSwap
 
         transaction(token1Amount: UFix64, token2Amount: UFix64) {
@@ -31,10 +31,10 @@ export const addLiquidity = async (signer, token1Amount , token2Amount) => {
                 self.poolID = 1
 
                 self.emuTokenVaultRef = signer.borrow<&EmuToken.Vault>(from: EmuToken.EmuTokenStoragePath)
-                    ?? panic("Could not borrow a reference to Vault")
+                    ?? panic("Could not borrow a reference to EmuToken Vault")
 
                 self.fusdVaultRef = signer.borrow<&FUSD.Vault>(from: /storage/fusdVault)
-                    ?? panic("Could not borrow a reference to Vault")
+                    ?? panic("Could not borrow a reference to FUSD Vault")
 
                 // check if Collection is created if not then create
                 if signer.borrow<&EmuSwap.Collection>(from: EmuSwap.LPTokensStoragePath) == nil {
