@@ -6,6 +6,7 @@ import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import TokenInput from "../../../components/TokenInput";
 import { TOKENS } from "../../../config";
+import * as transactions from "../../../flow/transactions/addLiquidity"
 
 export default function AddPage() {
     const router = useRouter();
@@ -13,7 +14,14 @@ export default function AddPage() {
         console.log(router.query)
     }, [router])
     const [firstToken, setFirstToken] = useState(TOKENS[0]);
-    const [secondToken, setSecondToken] = useState(TOKENS[1])
+    const [firstTokenAmount, setFirstTokenAmount] = useState(0);
+    const [secondToken, setSecondToken] = useState(TOKENS[1]);
+    const [secondTokenAmount, setSecondTokenAmount] = useState(0);
+
+    const addLiquidity = () => {
+        transactions.addLiquidity(fcl.authz, firstTokenAmount, secondTokenAmount);
+    }
+
     return (
         <>
             <NextSeo
@@ -47,13 +55,26 @@ export default function AddPage() {
                         </button>
                     </div>
                     <div className="swap-main">
-                        <TokenInput tokenImage={firstToken.icon} title={firstToken.tokenName} onChange={(e) => setFirstToken(e)} />
+                        <TokenInput 
+                            tokenImage={firstToken.icon} 
+                            title={firstToken.tokenName} 
+                            onAmountChange = {(value) => {setFirstTokenAmount(value)}} 
+                            onChange={(e) => setFirstToken(e)} 
+                            amount = {firstTokenAmount}
+                            balance = {0}/>
                         <div className="display-center">
                             <AddRoundedIcon />
                         </div>
-                        <TokenInput tokenImage={secondToken.icon} title={secondToken.tokenName} onChange={(e) => setSecondToken(e)} />
+                        <TokenInput 
+                            tokenImage={secondToken.icon} 
+                            title={secondToken.tokenName} 
+                            onAmountChange = {(value) => {setSecondTokenAmount(value)}}  
+                            onChange={(e) => setSecondToken(e)} 
+                            amount = {secondTokenAmount}
+                            balance = {0}
+                            />
                     </div>
-                    <button className="btn-add-amount" style={{ marginTop: 10 }}>
+                    <button className="btn-add-amount" style={{ marginTop: 10 }} onClick={addLiquidity}>
                         Enter an amount
                     </button>
                 </div>

@@ -4,18 +4,22 @@ import TokenInput from "../components/TokenInput";
 import { TOKENS } from "../config";
 import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
 import * as scripts from "../flow/scripts/script.getPoolsMetaData"
+import * as fcl from "@onflow/fcl";
 
 export default function SwapPage() {
     const [firstToken, setFirstToken] = useState(TOKENS[0]);
+    const [firstTokenBalance, setFirstTokenBalance] = useState(0);
     const [firstTokenAmount, setFirstTokenAmount] = useState(0);
     const [secondToken, setSecondToken] = useState(TOKENS[1]);
+    const [secondTokenBalance, setSecondTokenBalance] = useState(0);
     const [secondTokenAmount, setSecondTokenAmount] = useState(0);
     const [poolsMetaData, setPoolsMetaData ] = useState([]);
+
     const handleReplace = () => {
         setFirstToken(secondToken)
         setSecondToken(firstToken)
-        setFirstTokenAmount(secondTokenAmount)
-        setsetSecondTokenAmount(firstTokenAmount)
+        setFirstTokenBalance(secondTokenBalance)
+        setsetSecondTokenBalance(firstTokenBalance)
     }
 
     const getPools = async () => {
@@ -24,11 +28,11 @@ export default function SwapPage() {
         
     }
 
-    const getTokensAmount = () => {
+    const getTokensBalance = () => {
         poolsMetaData.forEach((item,index) => {
             if (item.token1Identifier === firstToken && item.token2Identifier === secondToken) {
-                setFirstTokenAmount(item.token1Amount);
-                setSecondTokenAmount(item.token2Amount);
+                setFirstTokenBalance(item.token1Amount);
+                setSecondTokenBalance(item.token2Amount);
             }
         })
     }
@@ -38,7 +42,7 @@ export default function SwapPage() {
     },[]);
 
     useEffect(()=>{
-        getTokensAmount();
+        getTokensBalance();
     },[poolsMetaData]);
     
     return (
@@ -65,24 +69,37 @@ export default function SwapPage() {
             <main>
                 <div className="swap-box">
                     <div className="swap-main">
-                        <TokenInput tokenImage={firstToken.icon} title={firstToken.tokenName} onChange={(e) => {
-                            setFirstToken(e);
-                        }} inputTitle="From" balance={firstTokenAmount}/>
+                        <TokenInput 
+                            tokenImage={firstToken.icon} 
+                            title={firstToken.tokenName} 
+                            onChange={(e) => {
+                                setFirstToken(e);
+                            }} 
+                            inputTitle="From" 
+                            onAmountChange = {(value) => {setFirstTokenAmount(value)}}  
+                            amount = {firstTokenAmount}
+                            balance={firstTokenBalance}
+                            />
                         <div className="display-center">
                             <button className="btn-replace" onClick={() => handleReplace()}>
                                 <ArrowDownwardRoundedIcon />
                             </button>
                         </div>
-                        <TokenInput tokenImage={secondToken.icon} title={secondToken.tokenName} onChange={(e) => {
-                             console.log(e);
+                        <TokenInput 
+                            tokenImage={secondToken.icon} 
+                            title={secondToken.tokenName} 
+                            onChange={(e) => {
                              setSecondToken(e);
-                        }} inputTitle="To" balance={secondTokenAmount}/>
+                            }} 
+                            inputTitle="To" 
+                            onAmountChange = {(value) => {setSecondTokenAmount(value)}}  
+                            amount = {secondTokenAmount}
+                            balance={secondTokenBalance}/>
                     </div>
                     <button className="btn-add-amount" style={{ marginTop: 10 }}>
                         Enter an amount
                     </button>
                 </div>
-
             </main>
         </>
     )

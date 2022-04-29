@@ -19,7 +19,7 @@ export const TOKENS = [
         tokenName: "REVV",
         tokenAddress: "0xd01e482eb680ec9f",
         icon: "/img/icons/revv-logo.png"
-    }
+    },
 ]
 
 export const FARMS = [

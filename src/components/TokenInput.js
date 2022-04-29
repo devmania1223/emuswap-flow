@@ -5,11 +5,7 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import { CloseIcon } from "./svgIcon";
 import { TOKENS } from "../config";
 
-export default function TokenInput({ tokenImage, title, onChange, inputTitle, balance }) {
-    const [amount, setAmount] = useState();
-    const handleValue = (amount) => {
-        setAmount(amount)
-    }
+export default function TokenInput({ tokenImage, title, onChange, onAmountChange, inputTitle, amount , balance }) {
     const [tokenModal, setTokenModal] = useState(false);
 
     const getDetailData = async () => {
@@ -29,7 +25,7 @@ export default function TokenInput({ tokenImage, title, onChange, inputTitle, ba
                 <div className="form-control">
                     <input
                         value={amount}
-                        onChange={(e) => handleValue(e.target.value)}
+                        onChange={(e) => onAmountChange(e.target.value)}
                         placeholder="0.00"
                     />
                     <button className="btn-max">
