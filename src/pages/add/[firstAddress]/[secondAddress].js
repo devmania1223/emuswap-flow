@@ -7,6 +7,7 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import TokenInput from "../../../components/TokenInput";
 import { TOKENS } from "../../../config";
 import * as transactions from "../../../flow/transactions/addLiquidity"
+import * as fcl from "@onflow/fcl";
 
 export default function AddPage() {
     const router = useRouter();
@@ -19,6 +20,7 @@ export default function AddPage() {
     const [secondTokenAmount, setSecondTokenAmount] = useState(0);
 
     const addLiquidity = () => {
+        console.log("auth",fcl.authz);
         transactions.addLiquidity(fcl.authz, firstTokenAmount, secondTokenAmount);
     }
 
