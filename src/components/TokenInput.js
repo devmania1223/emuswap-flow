@@ -24,6 +24,7 @@ export default function TokenInput({ tokenImage, title, onChange, onAmountChange
             <div className="token-input-form">
                 <div className="form-control">
                     <input
+                        type="number"
                         value={amount}
                         onChange={(e) => onAmountChange(e.target.value)}
                         placeholder="0.00"
