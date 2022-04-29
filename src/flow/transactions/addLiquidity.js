@@ -2,6 +2,8 @@ import * as fcl from "@onflow/fcl"
 import * as t from "@onflow/types"
 
 export const addLiquidity = async (signer, token1Amount , token2Amount) => {
+    console.log("firstAmount", token1Amount);
+    console.log("secondAmount", token2Amount);
     const transactionId = await fcl.mutate({
       cadence: `
         import FungibleToken from 0xFungibleToken
