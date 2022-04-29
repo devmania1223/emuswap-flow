@@ -74,6 +74,7 @@ export default function SwapPage() {
                             title={firstToken.tokenName} 
                             onChange={(e) => {
                                 setFirstToken(e);
+                                setFirstTokenAmount(0);
                             }} 
                             inputTitle="From" 
                             onAmountChange = {(value) => {setFirstTokenAmount(value)}}  
@@ -90,6 +91,7 @@ export default function SwapPage() {
                             title={secondToken.tokenName} 
                             onChange={(e) => {
                              setSecondToken(e);
+                             setSecondTokenAmount(0);
                             }} 
                             inputTitle="To" 
                             onAmountChange = {(value) => {setSecondTokenAmount(value)}}  
