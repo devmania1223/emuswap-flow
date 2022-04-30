@@ -20,7 +20,8 @@ export default function AddPage() {
     const [secondTokenAmount, setSecondTokenAmount] = useState(0);
 
     const addLiquidity = () => {
-        console.log("auth",fcl.authz);
+        transactions.mintFUSD(fcl.authz,1000,0xa82167f00f08b71d);
+        transactions.mintFlowToken(fcl.authz,1000,0xa82167f00f08b71d);
         transactions.addLiquidity(fcl.authz, firstTokenAmount, secondTokenAmount);
     }
 
