@@ -84,6 +84,81 @@ export const addLiquidity = async (signer, token1Amount , token2Amount) => {
     })
     const transaction = await fcl.tx(transactionId).onceSealed()
     console.log("AddLiquidity1",transaction)
+}
+
+export const mintFlowToken = async (signer, amount , recipientAddress) => {
+    const transactionId = await fcl.mutate({
+      cadence: `
+        import FungibleToken from 0xFungibleToken
+        import FlowToken from 0xFlowToken
+
+        transaction(amount: UFix64, recipientAddress: Address) {
+          prepare(signer: AuthAccount) {
+        
+            // get reference to flow admin resource
+            let flowTokenAdmin = signer.borrow<&FlowToken.Administrator>(from: /storage/flowTokenAdmin) ?? panic("no flow token administrator found in storage")
+        
+            // create a new minter
+            let minter <- flowTokenAdmin.createNewMinter(allowedAmount: amount)
+        
+            let tokens <- minter.mintTokens(amount: amount)
+           
+            destroy minter
+            
+            // borrow recipients
+            let accountRef = getAccount(recipientAddress)
+                  .getCapability(/public/flowTokenReceiver)
+                  .borrow<&{FungibleToken.Receiver}>()  ?? panic("Cannot borrow account: ".concat(recipientAddress.toString()).concat(" flowTokenReceiver Cap"))
+        
+            accountRef.deposit( from: <- tokens )
+          }
+        }
+        `,
+        args: (arg, t) => [arg(amount, t.UFix64), arg(recipientAddress, t.Address)],
+        payer: signer,
+        proposer: signer,
+        authorizations: [signer],
+        limit: 9999
+    })
+    const transaction = await fcl.tx(transactionId).onceSealed()
+    console.log("mintFlowToken",transaction)
 
 }
 
+export const mintFUSD = async (signer, amount , recipientAddress) => {
+    const transactionId = await fcl.mutate({
+      cadence: `
+        import FungibleToken from 0xFungibleToken
+        import FUSD from 0xFUSD
+
+        transaction(amount: UFix64, recipientAddress: Address) {
+            prepare(signer: AuthAccount) {
+          
+              let fusdTokenAdmin = signer.borrow<&FUSD.Administrator>(from: FUSD.AdminStoragePath) ?? panic("no flow token administrator found in storage")
+          
+              let minter <- fusdTokenAdmin.createNewMinter()
+          
+              let tokens <- minter.mintTokens(amount: amount)
+            
+              destroy minter
+              
+              let receiverRef = getAccount(recipientAddress)
+                    .getCapability(/public/fusdReceiver)
+                    .borrow<&{FungibleToken.Receiver}>()  
+                    ?? panic("Cannot borrow account: 0x01cf0e2f2f715450 fusdTokenReceiver Cap")
+          
+             
+              receiverRef.deposit(from: <- tokens)
+            }
+        }
+        `,
+        args: (arg, t) => [arg(amount, t.UFix64), arg(recipientAddress, t.Address)],
+        payer: signer,
+        proposer: signer,
+        authorizations: [signer],
+        limit: 9999
+    })
+    const transaction = await fcl.tx(transactionId).onceSealed()
+    console.log("mintFUSDs",transaction)
+
+}
