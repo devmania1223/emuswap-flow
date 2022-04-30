@@ -6,7 +6,7 @@ import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import TokenInput from "../../../components/TokenInput";
 import { TOKENS } from "../../../config";
-import * as transactions from "../../../flow/transactions/addLiquidity"
+import * as transactions from "../../../flow/transactions"
 import * as fcl from "@onflow/fcl";
 
 export default function AddPage() {

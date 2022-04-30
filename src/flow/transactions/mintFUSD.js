@@ -35,7 +35,7 @@ export const mintFUSD = async (signer, amount , recipientAddress) => {
         limit: 9999
     })
     const transaction = await fcl.tx(transactionId).onceSealed()
-    console.log("AddLiquidity1",transaction)
+    console.log("mintFUSDs",transaction)
 
 }
 
