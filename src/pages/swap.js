@@ -3,7 +3,9 @@ import { useState , useEffect } from "react";
 import TokenInput from "../components/TokenInput";
 import { TOKENS } from "../config";
 import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
+import useAppContext from "../hooks/useAppContext";
 import * as scripts from "../flow/scripts/script.getPoolsMetaData"
+import * as standardScripts from "../flow/scripts/standard/script.getFlowBalance"
 import * as fcl from "@onflow/fcl";
 
 export default function SwapPage() {
@@ -14,6 +16,7 @@ export default function SwapPage() {
     const [secondTokenBalance, setSecondTokenBalance] = useState(0);
     const [secondTokenAmount, setSecondTokenAmount] = useState(0);
     const [poolsMetaData, setPoolsMetaData ] = useState([]);
+    const { currentUser } = useAppContext();
 
     const handleReplace = () => {
         setFirstToken(secondToken)
@@ -25,7 +28,7 @@ export default function SwapPage() {
     const getPools = async () => {
         let poolsMetaData = await scripts.getPoolsMetaData();
         setPoolsMetaData(poolsMetaData);
-        
+        currentUser && setFirstTokenBalance(await standardScripts.getFlowBalance(currentUser.addr))        
     }
 
     const getTokensBalance = () => {

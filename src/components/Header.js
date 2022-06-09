@@ -4,20 +4,17 @@ import "../../flow/config";
 import { CloseIcon, MenuIcon, WalletIcon } from "./svgIcon";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
+import useAppContext from "../hooks/useAppContext";
 import Image from "next/image";
 
 export default function Header() {
-    const router = useRouter();
-    const [user, setUser] = useState({ loggedIn: null });
+    const router = useRouter();    
     const [open, setOpen] = useState(false);
+    const { currentUser } = useAppContext();
 
     useEffect(() => {
-        fcl.currentUser.subscribe(setUser);
-    }, [])
-
-    useEffect(() => {
-        console.log(user.addr)
-    }, [user])
+        //console.log(currentUser.addr)
+    }, [currentUser])
 
     return (
         <header className="header">
@@ -68,10 +65,10 @@ export default function Header() {
                     </div>
                     <div className="header-right">
                         <button className="btn-connect" onClick={fcl.logIn}>
-                            {user && user.addr ?
+                            {currentUser && currentUser.addr ?
                                 <>
                                     <WalletIcon />
-                                    <span className="wallet-address">{user.addr}</span>
+                                    <span className="wallet-address">{currentUser.addr}</span>
                                 </>
                                 :
                                 <>
