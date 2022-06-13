@@ -1,12 +1,36 @@
-import { useState } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react"
+import Image from "next/image"
+import useAppContext from "../../hooks/useAppContext"
+import * as transactions from "../../flow/transactions"
+import * as scripts from "../../flow/scripts"
+import * as fcl from "@onflow/fcl"
 
 export default function StakePage() {
-    const [tab, setTab] = useState("stake");
-    const [stakedAmount, setStakedAmount] = useState(0);
+    const [tab, setTab] = useState("stake")
+    const [stakedAmount, setStakedAmount] = useState(0)
+    const [pendingRewards, setPendingRewards] = useState(0)
+    const [stakesInfo, setStakesInfo] = useState([])
+    const { currentUser } = useAppContext()
+
+    useEffect(() => {
+        currentUser && (async () => setPendingRewards(await scripts.getPendingRewards(0, currentUser.addr)))(); 
+        (async () => setStakesInfo(await scripts.getStakesInfo(0)))();
+        console.log(stakesInfo);
+    }, [])
+
     const handleStakedAmount = (e) => {
         setStakedAmount(e)
+    }    
+    const claimRewards = async () => {
+        await transactions.clainRewards(fcl.authz, 0)
     }
+    const stake = async () => {
+        await transactions.stake(fcl.authz, stakedAmount)
+    }
+    const unstake = async () => {
+        await transactions.unstake(fcl.authz, stakedAmount)
+    }
+    
     return (
         <main>
             <div className="container">
@@ -59,11 +83,11 @@ export default function StakePage() {
                                     </div>
                                     <div className="staked-item">
                                         <label>Pending Rewards</label>
-                                        <p>0</p>
+                                        <p>{pendingRewards}</p>
                                         <label>USDC</label>
                                     </div>
                                 </div>
-                                <button className="btn-farm-stake">
+                                <button className="btn-farm-stake" onClick={claimRewards}>
                                     Claim reward
                                 </button>
                             </div>
@@ -97,7 +121,7 @@ export default function StakePage() {
                                 </div>
                             </div>
                             <div className="stake-button">
-                                <button className="btn-farm-stake">
+                                <button className="btn-farm-stake" onClick={() => { tab === "stake" ? stake() : unstake() } }>
                                     {tab}
                                 </button>
                             </div>

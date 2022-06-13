@@ -45,7 +45,7 @@ export default function FarmItem({
                         </AvatarGroup>
                     </div> */}
                     <p>Rewards per week : <span>{rewardsPerWeek}</span></p>
-                    <button className="btn-farm-stake" onClick={() => router.push("/farm/deposit")}>
+                    <button className="btn-farm-stake" onClick={() => router.push("/farm/deposit/" + tokens[0].tokenAddress + "/" + tokens[1].tokenAddress)}>
                         deposit
                     </button>
                 </div>

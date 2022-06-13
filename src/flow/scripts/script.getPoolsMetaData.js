@@ -1,4 +1,5 @@
 import * as fcl from "@onflow/fcl"
+import { TOKENS } from "../../config"
 
 export const getPoolsMetaData = async () => {
   const info = await fcl.query({
@@ -16,6 +17,18 @@ export const getPoolsMetaData = async () => {
         return meta
     }
     `,
+  })
+
+  info.map(item => {
+    item.token1Index = 0;
+    item.token2Index = 1;
+    TOKENS.map((token, index) => {
+      if(token.tokenAddress === '0x'+ item.token1Identifier.split(".")[1]){
+        item.token1Index = index;
+      } else if (token.tokenAddress === '0x' + item.token2Identifier.split(".")[1]) {
+        item.token2Index = index;
+      }
+    })
   })
 
   return info;

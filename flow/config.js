@@ -17,8 +17,17 @@ import { config } from "@onflow/fcl";
 
 
 config({
-    "accessNode.api": "http://127.0.0.1:3569", // Mainnet: "https://access-mainnet-beta.onflow.org"
+    "accessNode.api": "http://localhost:8080", // Mainnet: "https://access-mainnet-beta.onflow.org"
     "discovery.wallet": "http://localhost:8701/fcl/authn", // Mainnet: "https://fcl-discovery.onflow.org/authn"
+    "challenge.handshake": "http://localhost:8701/fcl/authn",
     "0xFlowToken": "0x0ae53cb6e3f42a79",
-    "0xFungibleToken": "0xee82856bf20e2aa6"
+    "0xFungibleToken": "0xee82856bf20e2aa6",
+    "0xNonFungibleToken": "0xf8d6e0586b0a20c7",
+    "0xFungibleTokens": "0xf8d6e0586b0a20c7",
+    "0xMetadataViews": "0xf8d6e0586b0a20c7",
+    "0xEmuToken": "0x01cf0e2f2f715450",
+    "0xFUSD": "0xf8d6e0586b0a20c7",
+    "0xEmuSwap": "0x01cf0e2f2f715450",
+    "0xStakingRewards": "0x01cf0e2f2f715450",
+    "0xxEmuToken": "0x01cf0e2f2f715450",
 })

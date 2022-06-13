@@ -1,7 +1,17 @@
-import { NextSeo } from "next-seo";
-import FarmItem from "../../components/FarmItem";
-import { FARMS } from "../../config";
+import { NextSeo } from "next-seo"
+import { useEffect, useState } from "react"
+import FarmItem from "../../components/FarmItem"
+import { FARMS } from "../../config"
+import * as scripts from "../../flow/scripts"
+
 export default function FarmPage() {
+    const [farmMetaData, setFarmMetaData] = useState([])
+    
+    useEffect(() => {
+        (async () => setFarmMetaData(await scripts.getFarmMetaData(0)))();
+        console.log(farmMetaData);
+    }, [])
+
     return (
         <>
             <NextSeo

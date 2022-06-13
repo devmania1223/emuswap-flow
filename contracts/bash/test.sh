@@ -50,6 +50,9 @@ flow transactions send "./transactions/EmuSwap/exchange/add_liquidity_FLOW_FUSD.
 # User 2 Adds liquidity
 flow transactions send "./transactions/EmuSwap/exchange/add_liquidity_FLOW_FUSD.cdc" 200.0 1000.0 --signer "user-account2"
 
+# Retrieve liquidities
+flow scripts execute "./scripts/get_pools_meta.cdc"
+
 # Create new farm for pool 0 = Flow/FUSD
 flow transactions send "./transactions/Staking/admin/toggle_mock_time.cdc" --signer "admin-account"
 flow transactions send "./transactions/Staking/admin/create_new_farm.cdc" 0 --signer "admin-account"

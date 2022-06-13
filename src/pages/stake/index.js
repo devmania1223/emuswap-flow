@@ -1,7 +1,16 @@
-import { NextSeo } from "next-seo";
-import StakeItem from "../../components/StakeItem";
+import { NextSeo } from "next-seo"
+import { useEffect, useState } from "react"
+import StakeItem from "../../components/StakeItem"
+import * as scripts from "../../flow/scripts"
 
 export default function StakePage() {
+    const [stakesInfo, setStakesInfo] = useState([])
+
+    useEffect(() => {
+        (async () => setStakesInfo(await scripts.getStakesInfo(0)))();
+        console.log(stakesInfo);
+    }, [])
+
     return (
         <main>
             <NextSeo
@@ -25,7 +34,6 @@ export default function StakePage() {
             />
             <div className="stake-page">
                 <div className="stake-content">
-                    <StakeItem />
                     <StakeItem />
                 </div>
             </div>
