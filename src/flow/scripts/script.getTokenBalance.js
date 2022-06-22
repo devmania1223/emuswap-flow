@@ -1,5 +1,5 @@
 import * as fcl from "@onflow/fcl"
-import "../../../flow/config"
+import "../config"
 
 export const getTokenBalance = async (address, tokenName) => {    
   let info

@@ -33,11 +33,11 @@ export default function StakeItem() {
                 </div>
                 <div className="stake-info">
                     <label>APR (7D)</label>
-                    <p>$41,124</p>
+                    <p>$0</p>
                 </div>
                 <div className="stake-info">
                     <label>Deposit Fee</label>
-                    <p>1.00 %</p>
+                    <p>0.00 %</p>
                 </div>
             </div>
         </div>

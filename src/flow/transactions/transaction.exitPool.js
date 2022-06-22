@@ -3,7 +3,7 @@ import * as t from "@onflow/types"
 import "../config"
 import { toStr } from "../utils"
 
-export const unstake = async (signer, amount) => {
+export const exitPool = async (signer, amount) => {
     const transactionId = await fcl.mutate({
         cadence: `
     import FungibleToken from 0xFungibleToken
@@ -42,5 +42,5 @@ export const unstake = async (signer, amount) => {
         limit: 9999
     })
     const transaction = await fcl.tx(transactionId).onceSealed()
-    console.log("Unstake", transaction)
+    console.log("Stake", transaction)
 }

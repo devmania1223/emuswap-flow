@@ -9,11 +9,15 @@
 
 import FungibleToken from "../dependencies/FungibleToken.cdc"
 import FungibleTokens from "../dependencies/FungibleTokens.cdc"
+import MetadataViews from "../dependencies/MetadataViews.cdc"
 
 pub contract EmuSwap: FungibleTokens {
   
     // Pools kept here and only accessible via the contract (could make account to allow for future ideas?)
     access(contract) var poolsByID: @{UInt64: Pool}
+
+    // Map of Token Identifier (A.Vault)
+    access(contract) var poolsMap: {String: {String: UInt64}}
   
     // Total supply of liquidity tokens in existence
     access(contract) var totalSupplyByID: {UInt64: UFix64}
@@ -62,8 +66,8 @@ pub contract EmuSwap: FungibleTokens {
     pub event TokensBurned(tokenID: UInt64, amount: UFix64)
 
     // Event that is emitted when trading fee is updated
-    pub event LPFeeUpdated(feePercentage: UFix64)
-    pub event DAOFeeUpdated(feePercentage: UFix64)
+    pub event LPFeeUpdated(poolID: UInt64, feePercentage: UFix64)
+    pub event DAOFeeUpdated(poolID: UInt64, feePercentage: UFix64)
 
     // j00lz can make this event more specific from: and to: with amounts and Type.identifier or maybe poolID
     pub event Trade(token1Amount: UFix64, token2Amount: UFix64, side: UInt8)
@@ -75,6 +79,30 @@ pub contract EmuSwap: FungibleTokens {
     pub event FeesDeposited(tokenIdentifier: String, amount: UFix64)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Structures
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // PoolMeta
+    //
+    // Basic metadata about a pool
+    //
+    pub struct PoolMeta {
+        pub let token1Amount: UFix64
+        pub let token2Amount: UFix64
+
+        pub let token1Identifier: String
+        pub let token2Identifier: String
+
+        init(poolRef: &Pool) {
+            self.token1Amount = poolRef.token1Vault?.balance!
+            self.token2Amount = poolRef.token2Vault?.balance!
+            self.token1Identifier = poolRef.token1Vault.getType().identifier
+            self.token2Identifier = poolRef.token2Vault.getType().identifier
+            // poolRef.DAOFeePercentage
+            // poolRef.LPFeePercentage
+        }
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Resources
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -84,7 +112,7 @@ pub contract EmuSwap: FungibleTokens {
     // Main resource type created for each swap pool
     // Stored in a field the contract indexed by ID   
     //
-    pub resource Pool {
+    pub resource Pool: MetadataViews.Resolver {
         pub let ID: UInt64
 
         // Frozen flag controlled by Admin
@@ -93,6 +121,31 @@ pub contract EmuSwap: FungibleTokens {
         // Token Vaults
         access(contract) var token1Vault: @FungibleToken.Vault?
         access(contract) var token2Vault: @FungibleToken.Vault?
+
+        access(contract) var DAOFeePercentage: UFix64
+        access(contract) var LPFeePercentage: UFix64
+
+        // Pool Initalization
+        //
+        init(DAOFeePercentage: UFix64, LPFeePercentage: UFix64) {
+            self.isFrozen = true // frozen until admin unfreezes
+            self.token1Vault <- nil
+            self.token2Vault <- nil
+
+            self.ID = EmuSwap.nextPoolID
+            self.DAOFeePercentage = DAOFeePercentage
+            self.LPFeePercentage = LPFeePercentage
+            
+            // Emit an event that shows that the contract was initialized
+            emit TokensInitialized(tokenID: self.ID)
+            ///emit TokensInitialized(tokenID: self.ID, tokenName: tokenName, tokenSymbol: tokenSymbol, initialSupply: EmuSwap.totalSupplyByID[self.ID]!)
+        }
+
+        destroy() {
+            // j00lz add safety mechanism
+            destroy self.token1Vault
+            destroy self.token2Vault
+        }
 
         // Get Pool Meta
         //
@@ -109,44 +162,44 @@ pub contract EmuSwap: FungibleTokens {
         //
         // Get quote for Token1 (given) -> Token2
         pub fun quoteSwapExactToken1ForToken2(amount: UFix64): UFix64 {
-            let PoolMeta = self.getPoolMeta()
+            let poolMeta = self.getPoolMeta()
 
             // token1Amount * token2Amount = token1Amount' * token2Amount' = (token1Amount + amount) * (token2Amount - quote)
-            let quote = PoolMeta.token2Amount * amount / (PoolMeta.token1Amount + amount);
+            let quote = poolMeta.token2Amount * amount / (poolMeta.token1Amount + amount);
 
             return quote
         }
 
         // Get quote for Token1 -> Token2 (given)
         pub fun quoteSwapToken1ForExactToken2(amount: UFix64): UFix64 {
-            let PoolMeta = self.getPoolMeta()
+            let poolMeta = self.getPoolMeta()
 
-            assert(PoolMeta.token2Amount > amount, message: "Not enough Token2 in the pool")
+            assert(poolMeta.token2Amount > amount, message: "Not enough Token2 in the pool")
 
             // token1Amount * token2Amount = token1Amount' * token2Amount' = (token1Amount + quote) * (token2Amount - amount)
-            let quote = PoolMeta.token1Amount * amount / (PoolMeta.token2Amount - amount);
+            let quote = poolMeta.token1Amount * amount / (poolMeta.token2Amount - amount);
 
             return quote
         }
 
         // Get quote for Token2 (given) -> Token1
         pub fun quoteSwapExactToken2ForToken1(amount: UFix64): UFix64 {
-            let PoolMeta = self.getPoolMeta()
+            let poolMeta = self.getPoolMeta()
 
             // token1Amount * token2Amount = token1Amount' * token2Amount' = (token2Amount + amount) * (token1Amount - quote)
-            let quote = PoolMeta.token1Amount * amount / (PoolMeta.token2Amount + amount);
+            let quote = poolMeta.token1Amount * amount / (poolMeta.token2Amount + amount);
 
             return quote
         }
 
         // Get quote for Token2 -> Token1 (given)
         pub fun quoteSwapToken2ForExactToken1(amount: UFix64): UFix64 {
-            let PoolMeta = self.getPoolMeta()
+            let poolMeta = self.getPoolMeta()
 
-            assert(PoolMeta.token1Amount > amount, message: "Not enough Token1 in the pool")
+            assert(poolMeta.token1Amount > amount, message: "Not enough Token1 in the pool")
 
             // token1Amount * token2Amount = token1Amount' * token2Amount' = (token2Amount + quote) * (token1Amount - amount)
-            let quote = PoolMeta.token2Amount * amount / (PoolMeta.token1Amount - amount);
+            let quote = poolMeta.token2Amount * amount / (poolMeta.token1Amount - amount);
 
             return quote
         }
@@ -165,12 +218,12 @@ pub contract EmuSwap: FungibleTokens {
             let originalBalance = from.balance
 
             // Withdraw DAO fee from input tokens.
-            let fees <- from.withdraw(amount: from.balance * EmuSwap.DAOFeePercentage)
+            let fees <- from.withdraw(amount: from.balance * self.DAOFeePercentage)
             EmuSwap.storeFees(fees: <-fees)
 
             // Calculate amount from pricing curve
             // A fee portion is taken from the input
-            let token1Amount = originalBalance * (1.0 - EmuSwap.LPFeePercentage - EmuSwap.DAOFeePercentage)
+            let token1Amount = originalBalance * (1.0 - self.LPFeePercentage - self.DAOFeePercentage)
             let token2Amount = self.quoteSwapExactToken1ForToken2(amount: token1Amount)
 
             assert(token2Amount > 0.0, message: "Exchanged amount too small")
@@ -193,12 +246,12 @@ pub contract EmuSwap: FungibleTokens {
             let originalBalance = from.balance
 
             // Withdraw DAO fee from input tokens.
-            let fees <- from.withdraw(amount: from.balance * EmuSwap.DAOFeePercentage)
+            let fees <- from.withdraw(amount: from.balance * self.DAOFeePercentage)
             EmuSwap.storeFees(fees: <-fees)
 
             // Calculate amount from pricing curve
             // A fee portion is taken from the final amount
-            let token2Amount = originalBalance * (1.0 - EmuSwap.LPFeePercentage - EmuSwap.DAOFeePercentage)
+            let token2Amount = originalBalance * (1.0 - self.LPFeePercentage - self.DAOFeePercentage)
             let token1Amount = self.quoteSwapExactToken2ForToken1(amount: token2Amount)
 
             assert(token1Amount > 0.0, message: "Exchanged amount too small")
@@ -295,31 +348,40 @@ pub contract EmuSwap: FungibleTokens {
             self.isFrozen = !self.isFrozen
         }
 
-        // Pool Initalization
-        //
-        init() {
-            self.isFrozen = true // frozen until admin unfreezes
-            self.token1Vault <- nil
-            self.token2Vault <- nil
-
-            self.ID = EmuSwap.nextPoolID
-            
-            // Emit an event that shows that the contract was initialized
-            emit TokensInitialized(tokenID: self.ID)
-            ///emit TokensInitialized(tokenID: self.ID, tokenName: tokenName, tokenSymbol: tokenSymbol, initialSupply: EmuSwap.totalSupplyByID[self.ID]!)
+        access(contract) fun setDAOFeePercentage(_ feePercentage: UFix64) {
+            self.DAOFeePercentage = feePercentage
+        }
+        
+        access(contract) fun setLPFeePercentage(_ feePercentage: UFix64) {
+            self.LPFeePercentage = feePercentage
         }
 
-        destroy() {
-            // j00lz add safety mechanism
-            destroy self.token1Vault
-            destroy self.token2Vault
+        pub fun getViews(): [Type] {
+            return [
+                Type<MetadataViews.Display>()
+            ]
         }
+        pub fun resolveView(_ view: Type): AnyStruct? {
+           let metadata = self.getPoolMeta()
+           switch view {
+               case Type<MetadataViews.Display>():
+                return MetadataViews.Display(
+                    name: metadata.token1Identifier.concat(":").concat(metadata.token2Identifier),
+                    description: "Description of this pool",
+                    thumbnail: MetadataViews.HTTPFile(
+                        url: "//Thumbnail.jpg"
+                    )
+                )
+           }
+           return nil
+        }
+
     }
 
     // TokenVault
     //
     // The LP Tokens that are issued are stored in TokenVaults
-    pub resource TokenVault: FungibleTokens.Provider, FungibleTokens.Receiver, FungibleTokens.Balance {
+    pub resource TokenVault: FungibleTokens.Provider, FungibleTokens.Receiver, FungibleTokens.Balance, MetadataViews.Resolver {
 
         // holds the balance of a users tokens
         pub var balance: UFix64
@@ -347,6 +409,27 @@ pub contract EmuSwap: FungibleTokens {
             emit TokensDeposited(tokenID: self.tokenID, amount: vault.balance, to: self.owner?.address)
             vault.balance = 0.0
             destroy vault
+        }
+
+        pub fun getViews(): [Type] {
+            return [
+                Type<MetadataViews.Display>()
+            ]
+        }
+
+        pub fun resolveView(_ view: Type): AnyStruct? {
+            let meta = EmuSwap.borrowPool(id: self.tokenID)!.getPoolMeta()
+            switch view {
+                case Type<MetadataViews.Display>():
+                    return MetadataViews.Display(
+                        name: meta.token1Identifier.concat(":").concat(meta.token2Identifier),
+                        description: "Description of this LPToken",
+                        thumbnail: MetadataViews.HTTPFile(
+                            url: "//LPTokenThumbnail.jpg"
+                        )
+                    )
+           }
+           return nil
         }
 
         destroy() {
@@ -383,6 +466,14 @@ pub contract EmuSwap: FungibleTokens {
             return <- self.token2.withdraw(amount: self.token2.balance)
         }
 
+        // returns identifiers with ".Vault" from "A.f8d6e0586b0a20c7.FUSD.Vault"
+        pub fun getIdentifiers(): [String] {
+            let ids = [self.token1.getType().identifier, self.token2.getType().identifier]
+            ids[0] = ids[0].slice(from: 0, upTo: ids[0].length - 6)
+            ids[1] = ids[1].slice(from: 0, upTo: ids[1].length - 6)
+            return ids
+        }
+
         destroy() {
             destroy self.token1
             destroy self.token2
@@ -394,30 +485,34 @@ pub contract EmuSwap: FungibleTokens {
     // Stored in users storage
     // and contains their LP Token Vaults
     //
-    pub resource Collection: FungibleTokens.CollectionPublic {
+    pub resource Collection: FungibleTokens.CollectionPublic, MetadataViews.ResolverCollection {
         pub var ownedVaults: @{UInt64: FungibleTokens.TokenVault}
 
         // Accepts any FungibleTokens and either 
         // deposits them in appropriate ownedVault 
-        // or adds deposits whole vault if they've not been received before
+        // or deposits whole vault if they've not been received before
         //
         pub fun deposit(token: @FungibleTokens.TokenVault) {
             if self.ownedVaults[token.tokenID] != nil {
                 self.ownedVaults[token.tokenID]?.deposit!(from: <- token)
             } else {
-                let nullResource <- 
-                self.ownedVaults.insert(key: token.tokenID, <- token)
-                destroy nullResource
+                self.ownedVaults[token.tokenID] <-! token
             }
         }
+
+        pub fun borrowViewResolver(id: UInt64): &{MetadataViews.Resolver} {
+            let vault = (&self.ownedVaults[id] as auth &FungibleTokens.TokenVault?)
+            let emuSwapVault = vault as! &EmuSwap.TokenVault
+            return emuSwapVault as &{MetadataViews.Resolver} 
+        }
+
 
         pub fun getIDs(): [UInt64] {
             return self.ownedVaults.keys
         }
 
         pub fun borrowVault(id: UInt64): &FungibleTokens.TokenVault {
-            let tokenRef = &self.ownedVaults[id] as? &FungibleTokens.TokenVault?
-            return tokenRef!
+            return (&self.ownedVaults[id] as! &FungibleTokens.TokenVault?)!
         }
 
         init() {
@@ -432,19 +527,35 @@ pub contract EmuSwap: FungibleTokens {
     // Admin resource
     //
     // Stored in account contract is deployed to on initalization
-    // Only the admin resource can create new pools, update fees and freeze unfreeze pools
+    // Only the admin resource can create new pools, update fees and freeze/unfreeze pools
     //
     pub resource Admin {
 
         pub fun createNewLiquidityPool(from: @EmuSwap.TokenBundle): @EmuSwap.TokenVault {
+            let token1 = from.getIdentifiers()[0]
+            let token2 = from.getIdentifiers()[1]
+
+            assert(token1 != token2, message: "Cannot create pool with identical tokens!")
+            assert(EmuSwap.getPoolIDFromIdentifiers(token1: token1, token2: token2) == nil, message: "Pool already exists")
+            
             // create new pool
-            let newPool <- create Pool()
+            let newPool <- create Pool(DAOFeePercentage: EmuSwap.DAOFeePercentage, LPFeePercentage: EmuSwap.LPFeePercentage)
             
             // drop liquidity in
             newPool.donateLiquidity(from: <- from)
 
             // Add new Pool to dictionary
             EmuSwap.poolsByID[EmuSwap.nextPoolID] <-! newPool
+
+            // Update poolMap
+            if EmuSwap.poolsMap[token1] == nil {
+                EmuSwap.poolsMap[token1] = {}
+            }
+            if EmuSwap.poolsMap[token2] == nil {
+                EmuSwap.poolsMap[token2] = {}
+            }
+            EmuSwap.poolsMap[token1]!.insert(key: token2, EmuSwap.nextPoolID)
+            EmuSwap.poolsMap[token2]!.insert(key: token1, EmuSwap.nextPoolID)
 
             // Create initial tokens
             let lpTokens <- EmuSwap.mintTokens(tokenID: EmuSwap.nextPoolID, amount: 1.0)
@@ -458,19 +569,18 @@ pub contract EmuSwap: FungibleTokens {
             return <- lpTokens
         }
 
-        pub fun updateLPFeePercentage(feePercentage: UFix64) {
-            EmuSwap.LPFeePercentage = feePercentage
-            emit LPFeeUpdated(feePercentage: feePercentage)
+        pub fun updateLPFeePercentage(id: UInt64, feePercentage: UFix64) {
+            (&EmuSwap.poolsByID[id] as &Pool?)!.setLPFeePercentage(feePercentage)
+            emit LPFeeUpdated(poolID: id, feePercentage: feePercentage)
         }
         
-        pub fun updateDAOFeePercentage(feePercentage: UFix64) {
-            EmuSwap.DAOFeePercentage = feePercentage
-            emit DAOFeeUpdated(feePercentage: feePercentage)
+        pub fun updateDAOFeePercentage(id: UInt64, feePercentage: UFix64) {
+            (&EmuSwap.poolsByID[id] as &Pool?)!.setDAOFeePercentage(feePercentage)
+            emit DAOFeeUpdated(poolID: id, feePercentage: feePercentage)
         }
 
         pub fun togglePoolFreeze(id: UInt64) {
-            let poolRef = &EmuSwap.poolsByID[id] as &Pool?
-            poolRef!.togglePoolFreeze()
+            (&EmuSwap.poolsByID[id] as &Pool?)!.togglePoolFreeze()
         }
     }
 
@@ -495,16 +605,30 @@ pub contract EmuSwap: FungibleTokens {
     // returns reference to the requested pool if it exists or nil for caller to handle
     //
     pub fun borrowPool(id: UInt64): &Pool? {
-        if EmuSwap.poolsByID[id] != nil {
-            return &EmuSwap.poolsByID[id] as &Pool?
-        }
-        else {
-            return nil
-        }
+        return &EmuSwap.poolsByID[id] as &Pool?
     }
 
     pub fun getPoolIDs(): [UInt64] {
         return EmuSwap.poolsByID.keys
+    }
+
+    pub fun getSwapsAvailableForToken(identifier: String): {String: UInt64}? {
+        return self.poolsMap[identifier]
+    }
+
+    pub fun getAllRoutes(): {String: {String: UInt64}} {
+        return self.poolsMap
+    }
+
+    pub fun getPoolIDFromIdentifiers(token1: String, token2: String): UInt64? {
+        let token1ToToken2Exists = EmuSwap.poolsMap.containsKey(token1) && EmuSwap.poolsMap[token1]!.containsKey(token2) 
+        let token2ToToken1Exists = EmuSwap.poolsMap.containsKey(token2) && EmuSwap.poolsMap[token2]!.containsKey(token1) 
+
+        if token1ToToken2Exists && token2ToToken1Exists {
+            return self.poolsMap[token1]![token2]!
+        } else {
+            return nil
+        }
     }
 
     // j00lz todo add these to metadata format... 
@@ -526,7 +650,6 @@ pub contract EmuSwap: FungibleTokens {
         }
         return feesCollectedByIdentifier
     }
-
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -569,7 +692,7 @@ pub contract EmuSwap: FungibleTokens {
     access(contract) fun storeFees(fees: @FungibleToken.Vault) {
         let identifier = fees.getType().identifier
         let amount = fees.balance
-        // check if fees of this token type have been collected
+        // check if fees of this token type have already been collected
         if EmuSwap.feesByIdentifier[identifier] != nil {
             EmuSwap.feesByIdentifier[identifier]?.deposit!(from: <-fees)
         } else { // first times fees of this type collected
@@ -578,27 +701,51 @@ pub contract EmuSwap: FungibleTokens {
         emit FeesDeposited(tokenIdentifier: identifier, amount: amount)
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Structures
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // PoolMeta
-    //
-    // Basic metadata about a pool
-    //
-    pub struct PoolMeta {
-        pub let token1Amount: UFix64
-        pub let token2Amount: UFix64
 
-        pub let token1Identifier: String
-        pub let token2Identifier: String
+    // Helper Functions
 
-        init(poolRef: &Pool) {
-            self.token1Amount = poolRef.token1Vault?.balance!
-            self.token2Amount = poolRef.token2Vault?.balance!
-            self.token1Identifier = poolRef.token1Vault.getType().identifier
-            self.token2Identifier = poolRef.token2Vault.getType().identifier
+    pub fun getContractAddress(_ str: String): String {
+        return EmuSwap.split(str)[0]
+    }
+
+    pub fun getContractName(_ str: String): String {
+        return EmuSwap.split(str)[1]
+    }
+
+    pub fun getResourceName(_ str: String): String {
+        return EmuSwap.split(str)[2]
+    }
+
+    // split("A.f8d6e0586b0a20c7.ExampleNFT.NFT") returns ["f8d6e0586b0a20c7", "ExampleNFT", "NFT"]
+    pub fun split(_ str: String): [String] {
+        let at = EmuSwap.at(str)
+        var chunks: [String] = []
+        var i = 1
+        var bottom = 0
+        var top = at[0]
+        while i < at.length  {
+            bottom = top
+            top = at[i]
+            chunks.append(str.slice(from: bottom+1, upTo: top))
+            i = i + 1
         }
+        chunks.append(str.slice(from: top+1, upTo: str.length))
+        return chunks
+    }
+
+    pub fun at(_ input: String): [Int] {
+        var i = 0
+        var at: [Int] = []
+
+        while i < input.length {
+            if input[i] == "." {
+                at.append(i)
+            }
+            i = i + 1
+        }
+
+        return at
     }
     
     // Contract Initalization
@@ -608,8 +755,10 @@ pub contract EmuSwap: FungibleTokens {
     init() {
         self.totalSupplyByID = {}
         self.poolsByID <- {}
+        self.poolsMap = {}
         self.nextPoolID = 0
         
+        // defaults for new pools
         self.LPFeePercentage  = 0.0025 // 0.25%
         self.DAOFeePercentage = 0.0005 // 0.05%
         self.feesByIdentifier <- {}
@@ -620,8 +769,8 @@ pub contract EmuSwap: FungibleTokens {
 
         self.AdminStoragePath = /storage/EmuSwapAdmin
 
-        let admin <- create Admin()
-        self.account.save(<-admin, to: EmuSwap.AdminStoragePath)
+        destroy self.account.load<@AnyResource>(from: EmuSwap.AdminStoragePath)
+        self.account.save(<- create Admin(), to: EmuSwap.AdminStoragePath)
 
         emit ContractInitialized()
     }

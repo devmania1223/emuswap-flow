@@ -60,7 +60,7 @@ flow transactions send "./transactions/Staking/admin/create_new_farm.cdc" 0 --si
 
 
 echo "Create FUSD reward Pool" 
-flow transactions send "./transactions/Staking/admin/create_reward_pool_fusd.cdc" 100000.0 --signer admin-account
+# flow transactions send "./transactions/Staking/admin/create_reward_pool_fusd.cdc" 100000.0 --signer admin-account
 
 
 
@@ -89,7 +89,10 @@ flow transactions send "./transactions/Staking/user/stake.cdc" 1.0 --signer "use
 
 
 flow scripts execute "./scripts/Staking/get_farm_meta.cdc" 0
+
 flow scripts execute "./scripts/Staking/get_pending_rewards.cdc" 0 0x179b6b1cb6755e31
+
+flow scripts execute "./scripts/Staking/get_pending_rewards.cdc" 0 0x01cf0e2f2f715450
 
 
 # flow transactions send "./transactions/Staking/user/add_liquidity_and_stake.cdc" 10.0 10.0 --signer "user-account1"
@@ -131,12 +134,20 @@ flow transactions send "./transactions/Staking/admin/update_mock_timestamp.cdc" 
 flow scripts execute "./scripts/Staking/get_farm_meta.cdc" 0
 flow scripts execute "./scripts/Staking/read_stakes_info.cdc" 0 
 
+# Setup xEmuToken 
+flow transactions send "./transactions/xEmu/setup.cdc" --signer "admin-account"
+flow transactions send "./transactions/xEmu/setup.cdc" --signer "user-account1"
+flow transactions send "./transactions/xEmu/setup.cdc" --signer "user-account2"
+
+flow transactions send "./transactions/xEmu/enterPool.cdc" 1.0 --signer "user-account1"
+
+flow transactions send "./transactions/xEmu/exitPool.cdc" 1.0 --signer "user-account1"
 
 # TokenPaths tricky to pass at the moment :/ can't create for some reason..... 
 
 # flow transactions send "./transactions/Staking/admin/create_reward_pool_fusd.cdc" /storage/fusdVault 0.1 --signer admin-account
 # flow transactions send "./transactions/Staking/admin/create_reward_pool_fusd.cdc" /storage/flowTokenVault 0.1 --signer admin-account
-flow transactions send "./transactions/Staking/admin/create_reward_pool_fusd.cdc" 100000.0 --signer admin-account
+# flow transactions send "./transactions/Staking/admin/create_reward_pool_fusd.cdc" 100000.0 --signer admin-account
 
 
 

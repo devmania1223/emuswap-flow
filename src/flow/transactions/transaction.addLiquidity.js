@@ -1,6 +1,6 @@
 import * as fcl from "@onflow/fcl"
 import * as t from "@onflow/types"
-import "../../../flow/config"
+import "../config"
 import {toStr} from "../utils"
 
 export const addLiquidity = async (signer, token1Amount, token2Amount) => {    

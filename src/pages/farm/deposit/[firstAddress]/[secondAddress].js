@@ -5,7 +5,7 @@ import useAppContext from "../../../../hooks/useAppContext"
 import { FARMS, TOKENS } from "../../../../config";
 import * as scripts from "../../../../flow/scripts"
 import * as transactions from "../../../../flow/transactions"
-import { getPoolID } from "../../../../flow/utils"
+import { getPoolID, getTotalStaked, getStakesInfoByAddress } from "../../../../flow/utils"
 import * as fcl from "@onflow/fcl"
 
 export default function DepositPage() {
@@ -13,7 +13,8 @@ export default function DepositPage() {
     const [amount, setAmount] = useState(0)
     const [poolsMetaData, setPoolsMetaData] = useState([])
     const [poolID, setPoolID] = useState(0)
-    const [pendingRewards, setPendingRewards] = useState(0)
+    const [totalStaked, setTotalStaked] = useState(0)
+    const [stakesInfo, setStakesInfo] = useState(null)
     const pathSet = router.asPath.split('/')
     const { currentUser } = useAppContext()
 
@@ -22,14 +23,23 @@ export default function DepositPage() {
     }
 
     useEffect(() => {
-        currentUser && (async () => setPendingRewards(await scripts.getPendingRewards(0, currentUser.addr)))(); 
         (async () => setPoolsMetaData(await scripts.getPoolsMetaData()))();
-        console.log(poolsMetaData, pathSet[pathSet.length - 2], pathSet[pathSet.length - 1]);
         setPoolID(getPoolID(poolsMetaData, pathSet[pathSet.length - 2], pathSet[pathSet.length - 1]));
+        refresh();
     }, [])
+
+    const refresh = async () => {
+        setTotalStaked(getTotalStaked(await scripts.getFarmMetaData(poolID)))
+        currentUser && setStakesInfo(getStakesInfoByAddress(await scripts.getStakesInfo(poolID), currentUser.addr))
+    }
 
     const deposit = async  () => {
         await transactions.deposit(fcl.authz, amount)
+        refresh()
+    }
+    const claimReward = async () => {
+        await transactions.claimRewards(fcl.authz, poolID)
+        refresh()
     }
     return (
         <main>
@@ -58,19 +68,19 @@ export default function DepositPage() {
                         <div className="reward-panel">
                             <div className="reward-item">
                                 <h4>Total deposits</h4>
-                                <p>$ 23,235,325</p>
+                                <p>{totalStaked}</p>
                             </div>
                             <div className="reward-item">
                                 <h4>Pool rate</h4>
-                                <p>4,5454 FLOW / week</p>
-                                <p>1,975 tUSDT / week</p>
+                                <p># FLOW / week</p>
+                                <p># tUSDT / week</p>
                             </div>
                         </div>
                         <div className="user-info">
                             <h3>Your liquidity deposits</h3>
-                            <h2>0</h2>
+                            <h2>{stakesInfo?.balance}</h2>
                             <h3>Your unclaimed rewards</h3>
-                            <h2>{pendingRewards}</h2>
+                            <h2>{stakesInfo?.pendingRewards}</h2>
                         </div>
                         <div className="deposit-input">
                             <label>Deposit amount</label>
@@ -81,6 +91,9 @@ export default function DepositPage() {
                         </div>
                         <button className="btn-farm-stake" onClick={deposit}>
                             Deposit
+                        </button>
+                        <button className="btn-farm-stake" onClick={claimReward}>
+                            Claim Reward
                         </button>
                     </div>
                 </div>

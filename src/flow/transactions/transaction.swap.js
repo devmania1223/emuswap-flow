@@ -1,6 +1,6 @@
 import * as fcl from "@onflow/fcl"
 import * as t from "@onflow/types"
-import "../../../flow/config"
+import "../config"
 import {toStr} from "../utils"
 
 export const swap = async (signer, amountIn, token1Name, token2Name) => {    

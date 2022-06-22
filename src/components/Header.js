@@ -1,6 +1,6 @@
 import Link from "next/link";
 import * as fcl from "@onflow/fcl"
-import "../../flow/config";
+import "../flow/config";
 import { CloseIcon, MenuIcon, WalletIcon } from "./svgIcon";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";

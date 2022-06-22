@@ -24,11 +24,11 @@ export default function StakePage() {
     const claimRewards = async () => {
         await transactions.clainRewards(fcl.authz, 0)
     }
-    const stake = async () => {
-        await transactions.stake(fcl.authz, stakedAmount)
+    const enterPool = async () => {
+        await transactions.enterPool(fcl.authz, stakedAmount)
     }
-    const unstake = async () => {
-        await transactions.unstake(fcl.authz, stakedAmount)
+    const exitPool = async () => {
+        await transactions.exitPool(fcl.authz, stakedAmount)
     }
     
     return (
@@ -66,15 +66,15 @@ export default function StakePage() {
                                     </div>
                                     <div className="stake-info">
                                         <label>APR (7D)</label>
-                                        <p>$41,124</p>
+                                        <p>$0</p>
                                     </div>
                                     <div className="stake-info">
                                         <label>Deposit Fee</label>
-                                        <p>1.00 %</p>
+                                        <p>0.00 %</p>
                                     </div>
                                 </div>
                             </div>
-                            <div className="info-box">
+                            {/* <div className="info-box">
                                 <div className="staked-info-box">
                                     <div className="staked-item">
                                         <label>Staked</label>
@@ -90,7 +90,7 @@ export default function StakePage() {
                                 <button className="btn-farm-stake" onClick={claimRewards}>
                                     Claim reward
                                 </button>
-                            </div>
+                            </div> */}
                             <div className="info-box">
                                 <label className="title">Stake Information</label>
                                 <p className="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus suscipit libero vel ligula lacinia, quis placerat purus condimentum. Etiam ut felis auctor, bibendum velit eu, finibus nisl. Phasellus volutpat, risus nec aliquet elementum, purus ipsum sollicitudin purus, vitae convallis justo orci ut enim. Nullam vitae dignissim nulla. Donec justo tellus, vehicula a libero at, semper aliquam eros. Duis felis orci, sodales sit amet tellus nec, sodales ultrices libero. Proin vel mattis nunc. Suspendisse porttitor lacus sit amet sem mattis, placerat consequat nisi gravida. Praesent nec turpis sit amet velit pharetra lobortis.</p>
@@ -121,7 +121,7 @@ export default function StakePage() {
                                 </div>
                             </div>
                             <div className="stake-button">
-                                <button className="btn-farm-stake" onClick={() => { tab === "stake" ? stake() : unstake() } }>
+                                <button className="btn-farm-stake" onClick={() => { tab === "stake" ? enterPool() : exitPool() } }>
                                     {tab}
                                 </button>
                             </div>

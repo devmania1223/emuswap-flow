@@ -1,6 +1,6 @@
 import * as fcl from "@onflow/fcl"
 import * as t from "@onflow/types"
-import "../../../flow/config"
+import "../config"
 
 export const getPendingRewards = async (poolID, address) => {
   const info = await fcl.query({
@@ -13,6 +13,7 @@ export const getPendingRewards = async (poolID, address) => {
       `,
     args: (arg) => [arg(poolID, t.UInt64), arg(address, t.Address)]
   })
-
-  return info;
+  if (Object.keys(info).length === 0)
+    return 0;
+  return info[0];
 }

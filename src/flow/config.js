@@ -1,5 +1,6 @@
 import { config } from "@onflow/fcl";
 
+/** config for testnet */
 // config({
 //     "accessNode.api": "https://access-testnet.onflow.org", // Mainnet: "https://access-mainnet-beta.onflow.org"
 //     "discovery.wallet": "https://fcl-discovery.onflow.org/testnet/authn", // Mainnet: "https://fcl-discovery.onflow.org/authn"
@@ -15,10 +16,10 @@ import { config } from "@onflow/fcl";
 //     "0xxEmuToken": "0xa82167f00f08b71d",
 // })
 
-
+/** config for emulator */
 config({
-    "accessNode.api": "http://localhost:8080", // Mainnet: "https://access-mainnet-beta.onflow.org"
-    "discovery.wallet": "http://localhost:8701/fcl/authn", // Mainnet: "https://fcl-discovery.onflow.org/authn"
+    "accessNode.api": "http://localhost:8080", 
+    "discovery.wallet": "http://localhost:8701/fcl/authn", 
     "challenge.handshake": "http://localhost:8701/fcl/authn",
     "0xFlowToken": "0x0ae53cb6e3f42a79",
     "0xFungibleToken": "0xee82856bf20e2aa6",

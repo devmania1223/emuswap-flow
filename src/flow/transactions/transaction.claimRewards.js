@@ -1,8 +1,8 @@
 import * as fcl from "@onflow/fcl"
 import * as t from "@onflow/types"
-import "../../../flow/config"
+import "../config"
 
-export const clainRewards = async (signer, farmID) => {
+export const claimRewards = async (signer, farmID) => {
     const transactionId = await fcl.mutate({
         cadence: `
     import FungibleToken from 0xFungibleToken

@@ -3,14 +3,12 @@ import * as t from "@onflow/types"
 import "../config"
 import { toStr } from "../utils"
 
-export const stake = async (signer, amount) => {
+export const enterPool = async (signer, amount) => {
     const transactionId = await fcl.mutate({
         cadence: `
     import FungibleToken from 0xFungibleToken
     import xEmuToken from 0xxEmuToken
     import EmuToken from 0xEmuToken
-
-    // User deposits EmuTokens and receives xEmuTokens in return
 
     transaction(amount: UFix64) {
 

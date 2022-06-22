@@ -1,16 +1,31 @@
 import { NextSeo } from "next-seo"
-import { useEffect, useState } from "react"
 import FarmItem from "../../components/FarmItem"
 import { FARMS } from "../../config"
 import * as scripts from "../../flow/scripts"
+import { getTotalStaked } from "../../flow/utils"
+import { useState, useEffect } from "react"
 
 export default function FarmPage() {
-    const [farmMetaData, setFarmMetaData] = useState([])
-    
+    const [farmsData, setFarmsData] = useState([])
+
     useEffect(() => {
-        (async () => setFarmMetaData(await scripts.getFarmMetaData(0)))();
-        console.log(farmMetaData);
+        initializeFarmsData()
     }, [])
+
+    const initializeFarmsData = async () => {
+        let data = []
+        for (let key = 0; key < FARMS.length; key++) {
+            data.push({
+                tokens: FARMS[key].tokens,
+                APY: FARMS[key].APY,
+                rewardTokens: FARMS[key].rewardTokens,
+                totalStaked: getTotalStaked(await scripts.getFarmMetaData(key)),
+                rewardsPerWeek: getTotalStaked(await scripts.getFarmMetaData(key)) * 0.23016,
+            })
+        }
+        console.log('initializeFarmsData', data)
+        setFarmsData(data)
+    }
 
     return (
         <>
@@ -36,15 +51,14 @@ export default function FarmPage() {
             <main>
                 <div className="container">
                     <div className="farm-content">
-                        {FARMS.map((item, key) => (
+                        {farmsData?.map((item, key) => (
                             <FarmItem
                                 key={key}
                                 tokens={item.tokens}
                                 totalStaked={item.totalStaked}
                                 rewardTokens={item.rewardTokens}
                                 rewardsPerWeek={item.rewardsPerWeek}
-                                APY={item.APY}
-                            />
+                                APY={item.APY} />
                         ))}
                     </div>
                 </div>
