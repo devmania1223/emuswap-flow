@@ -8,12 +8,11 @@ import * as fcl from "@onflow/fcl"
 export default function StakePage() {
     const [tab, setTab] = useState("stake")
     const [stakedAmount, setStakedAmount] = useState(0)
-    const [pendingRewards, setPendingRewards] = useState(0)
     const [stakesInfo, setStakesInfo] = useState([])
     const { currentUser } = useAppContext()
 
     useEffect(() => {
-        currentUser && (async () => setPendingRewards(await scripts.getPendingRewards(0, currentUser.addr)))(); 
+        // (async () => await transactions.setupPool(fcl.authz))();
         (async () => setStakesInfo(await scripts.getStakesInfo(0)))();
         console.log(stakesInfo);
     }, [])

@@ -15,7 +15,7 @@ export const getTotalStaked = (farmMeta) => {
 export const getStakesInfoByAddress = (stakesInfo, address) => {
     console.log('getStakesInfoByAddress', stakesInfo, address)
     let pendingRewards = 0.0
-    Object.keys(stakesInfo[address]?.pendingRewards).map(key => pendingRewards += 
+    stakesInfo[address]?.pendingRewards && Object.keys(stakesInfo[address]?.pendingRewards).map(key => pendingRewards += 
         eval(stakesInfo[address]?.pendingRewards[key]))
     return {
         balance: eval(stakesInfo[address]?.balance),

@@ -42,5 +42,5 @@ export const exitPool = async (signer, amount) => {
         limit: 9999
     })
     const transaction = await fcl.tx(transactionId).onceSealed()
-    console.log("Stake", transaction)
+    console.log("exitPool", transaction)
 }
