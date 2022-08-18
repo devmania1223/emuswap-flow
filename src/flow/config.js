@@ -19,7 +19,9 @@ import { config } from "@onflow/fcl";
 /** config for emulator */
 config({
     "accessNode.api": "http://localhost:8080", 
+    // "accessNode.api": "https://access-mainnet-beta.onflow.org", 
     "discovery.wallet": "http://localhost:8701/fcl/authn", 
+    // "discovery.wallet": "https://fcl-discovery.onflow.org/authn", 
     "challenge.handshake": "http://localhost:8701/fcl/authn",
     "0xFlowToken": "0x0ae53cb6e3f42a79",
     "0xFungibleToken": "0xee82856bf20e2aa6",
